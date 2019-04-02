@@ -1,0 +1,19 @@
+com.xair.h264demo
+dimen activity_horizontal_margin
+dimen activity_vertical_margin
+drawable ic_launcher
+id action_settings
+id btn_readfile
+id conect
+id surfaceView1
+layout activity_main
+menu main
+raw filter_fs
+raw filter_fs1
+raw filter_vs
+raw filter_vs1
+string action_settings
+string app_name
+string hello_world
+style AppBaseTheme
+style AppTheme

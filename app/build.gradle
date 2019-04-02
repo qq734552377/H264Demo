@@ -1,0 +1,27 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 28
+
+    defaultConfig {
+        applicationId "com.xair.h264demo"
+        minSdkVersion 19
+        targetSdkVersion 19
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:support-v4:19.1.0'
+    implementation files('libs/netty-all-4.1.6.Final.jar')
+    implementation files('libs/log4j-1.2.17.jar')
+    implementation files('libs/android-logging-log4j-1.0.3.jar')
+    implementation 'org.xutils:xutils:3.5.0'
+}
