@@ -40,6 +40,7 @@ public class MainActivity extends Activity {
 	private boolean isReadFileRun = false;
     NioTcpClient clientFor = null;
 	Thread readFileThread;
+	Thread videoGetThraed;
 
 	// Video Constants
 	private final static String MIME_TYPE = "video/avc"; // H.264 Advanced Video
@@ -56,10 +57,12 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
+        MyTools.writeSimpleLog("onCreate()");
 		initViews();
-		h264Queue = new H264Queue(MainActivity.this, 2);
+		if (h264Queue == null)
+			h264Queue = new H264Queue(MainActivity.this, 1);
 		flag = false;
+//		Toast.makeText(this,"onCreate",Toast.LENGTH_SHORT).show();
 	}
 
 	private void initViews() {
@@ -67,6 +70,7 @@ public class MainActivity extends Activity {
 		mSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
 			@Override
 			public void surfaceCreated(SurfaceHolder holder) {
+                MyTools.writeSimpleLog("surfaceCreated(holder)");
 				initDecoder();
 			}
 
@@ -101,43 +105,79 @@ public class MainActivity extends Activity {
 		findViewById(R.id.conect).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-                if (clientFor == null)
-				 clientFor = new NioTcpClient("192.168.43.1", 8850, true);
-				NettyClientMap.Add(clientFor);
 
-				new Thread(clientFor).start();
 			}
 		});
+
+
+
 	}
 
-	@Override
-	protected void onPause() {
-		if (mCodec != null)
-			mCodec.stop();
-		isPause = true;
-		super.onPause();
-	}
+
 
 	@Override
 	protected void onResume() {
 //		if (flag){
+//            MyTools.writeSimpleLog("重新绘制");
 //			setContentView(R.layout.activity_main);
 //			initViews();
 //		}
+		if (clientFor == null) {
+            MyTools.writeSimpleLog("创建videoClient");
+			clientFor = new NioTcpClient("192.168.43.1", 8850, true);
+			NettyClientMap.Add(clientFor);
+			if (videoGetThraed == null) {
+				videoGetThraed = new Thread(clientFor);
+				videoGetThraed.start();
+			}
+		}
+        MyTools.writeSimpleLog("onResume()");
 		flag = true;
 		isPause = false;
 		super.onResume();
 	}
+    @Override
+    protected void onPause() {
+        if (mCodec != null)
+            mCodec.stop();
+        isPause = true;
+        super.onPause();
+//        onStop();
+    }
 
-	@Override
+    @Override
+    protected void onStop() {
+        super.onStop();
+		if (mCodec != null)
+			mCodec.stop();
+		isPause = true;
+//		onDestroy();
+        MyTools.writeSimpleLog("onStop()");
+    }
+
+    @Override
 	protected void onDestroy() {
 		super.onDestroy();
+        MyTools.writeSimpleLog("onDestroy()");
 		if(readFileThread != null)
 			readFileThread.interrupt();
+		closeClient();
+	}
+
+	public void closeClient(){
 		if (clientFor != null) {
-            clientFor.Close();
-            clientFor = null;
-        }
+			clientFor.Close();
+			clientFor = null;
+		}
+		if (videoGetThraed != null){
+			videoGetThraed.interrupt();
+			videoGetThraed = null;
+		}
+		if (h264Queue != null)
+			h264Queue = null;
+		if(mCodec != null)
+			mCodec = null;
+
 	}
 
 	public void initDecoder() {
@@ -312,4 +352,6 @@ public class MainActivity extends Activity {
 			}
 		}
 	};
+
+
 }

@@ -34,19 +34,18 @@ public class H264Queue {
     }
 
     private void myRun() {
-        synchronized (this) {
-            try {
-                h264data one = h264Queue.poll();
-                if (one != null) {
-                    mainActivity.onFrame(one.data, 0, one.data.length);
-//                    Thread.sleep(1);
-                } else {
-                    Thread.sleep(1);
-                }
-            } catch (Exception e) {
-
+        try {
+            h264data one = getItem();
+            if (one != null) {
+                mainActivity.onFrame(one.data, 0, one.data.length);
+//                    Thread.sleep(2);
+            } else {
+                Thread.sleep(2);
             }
+        } catch (Exception e) {
+
         }
+
     }
 
     public void addItem(byte[] data) {
@@ -55,6 +54,12 @@ public class H264Queue {
         }
     }
 
+    public h264data getItem(){
+        synchronized (this) {
+            h264data one = h264Queue.poll();
+            return one;
+        }
+    }
 
     public void putData(byte[] buffer) {
         if (h264Queue.size() >= queuesize) {

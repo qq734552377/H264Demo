@@ -54,7 +54,6 @@ public class NioTcpClient implements Runnable {
         Ip = ip;
         Port = port;
         Old = old;
-        group = new NioEventLoopGroup();
     }
 
     @Override
@@ -67,33 +66,33 @@ public class NioTcpClient implements Runnable {
 //            synchronized (this) {
 //                if (mDispose)
 //                    return;
-
+            group = new NioEventLoopGroup();
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(group);
             bootstrap.channel(NioSocketChannel.class);
             bootstrap.option(ChannelOption.TCP_NODELAY, true);
             //TODO 可能需要扩容
-            bootstrap.option(ChannelOption.SO_BACKLOG, 1024*1024);
+            bootstrap.option(ChannelOption.SO_BACKLOG, 1024*1024*4);
             bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-            bootstrap.handler(new DataClientInitializer());
+            bootstrap.handler(new DataClientInitializer(this));
             f = bootstrap.connect(Ip, Port).sync();
             //等待链接关闭
-            f.addListener(new GenericFutureListener<Future<? super Void>>() {
-                @Override
-                public void operationComplete(Future<? super Void> future) throws Exception {
-                    ChannelFuture futureListener = (ChannelFuture) future;
-                    final EventLoop eventLoop = futureListener.channel().eventLoop();
-                    if (!futureListener.isSuccess()) {
-                        MyTools.writeSimpleLogWithTime("Failed to connect to server, try connect after 10s");
-                        futureListener.channel().eventLoop().schedule(new Runnable() {
-                            @Override
-                            public void run() {
-                                connect();
-                            }
-                        }, 10, TimeUnit.SECONDS);
-                    }
-                }
-            });
+//            f.addListener(new GenericFutureListener<Future<? super Void>>() {
+//                @Override
+//                public void operationComplete(Future<? super Void> future) throws Exception {
+//                    ChannelFuture futureListener = (ChannelFuture) future;
+//                    final EventLoop eventLoop = futureListener.channel().eventLoop();
+//                    if (!futureListener.isSuccess()) {
+//                        MyTools.writeSimpleLogWithTime("Failed to connect to server, try connect after 10s");
+//                        futureListener.channel().eventLoop().schedule(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                connect();
+//                            }
+//                        }, 10, TimeUnit.SECONDS);
+//                    }
+//                }
+//            });
             try {
                 f.channel().closeFuture().sync();
             } catch (InterruptedException e) {
@@ -113,7 +112,8 @@ public class NioTcpClient implements Runnable {
         synchronized (this) {
             if (mDispose)
                 return;
-            group.shutdownGracefully();
+            if (group != null)
+                group.shutdownGracefully();
             WaitChannel = 2;
         }
     }

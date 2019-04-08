@@ -1,7 +1,10 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:background="@android:color/black"
+    >
 
 <!--     <com.xair.xaremotecam.media.VideoSurfaceView
         android:id="@+id/media_surface"
@@ -13,8 +16,8 @@
 
     <SurfaceView
         android:id="@+id/surfaceView1"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="640dp"
+        android:layout_height="360dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true" />
 
@@ -33,6 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
+        android:visibility="gone"
         android:text="Button" />
 
 </RelativeLayout>
