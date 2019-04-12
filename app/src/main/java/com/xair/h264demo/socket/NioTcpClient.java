@@ -54,6 +54,7 @@ public class NioTcpClient implements Runnable {
         Ip = ip;
         Port = port;
         Old = old;
+        group = new NioEventLoopGroup();
     }
 
     @Override
@@ -66,14 +67,13 @@ public class NioTcpClient implements Runnable {
 //            synchronized (this) {
 //                if (mDispose)
 //                    return;
-            group = new NioEventLoopGroup();
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(group);
             bootstrap.channel(NioSocketChannel.class);
-            bootstrap.option(ChannelOption.TCP_NODELAY, true);
-            //TODO 可能需要扩容
-            bootstrap.option(ChannelOption.SO_BACKLOG, 1024*1024*4);
-            bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+//            bootstrap.option(ChannelOption.TCP_NODELAY, true);
+//            bootstrap.option(ChannelOption.SO_BACKLOG, 124);
+            bootstrap.option(ChannelOption.SO_RCVBUF, 1024*1024*2);//配置接收的缓冲区大小
+            bootstrap.option(ChannelOption.SO_KEEPALIVE, true);// 保持长连接
             bootstrap.handler(new DataClientInitializer(this));
             f = bootstrap.connect(Ip, Port).sync();
             //等待链接关闭
